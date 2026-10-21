@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SmartPark IoT — Airport & Mall Smart Parking Bay Reservation</title>
+  <title>SmartPark IoT — Airport & Mall Smart Parking System</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
@@ -16,8 +16,8 @@
         extend: {
           colors: {
             brand: '#2563eb',
-            darkbg: '#070b14',
-            cardbg: 'rgba(14, 22, 40, 0.75)',
+            darkbg: '#060a12',
+            cardbg: 'rgba(11, 19, 36, 0.75)',
             borderbg: 'rgba(255, 255, 255, 0.08)'
           },
           fontFamily: {
@@ -30,17 +30,28 @@
   </script>
   <style>
     body {
-      background-color: #070b14;
+      background-color: #060a12;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.15) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.8) 0px, transparent 50%);
+        radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.18) 0px, transparent 45%),
+        radial-gradient(at 100% 100%, rgba(29, 78, 216, 0.12) 0px, transparent 50%),
+        radial-gradient(circle at center, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
       color: #f1f5f9;
       min-height: 100vh;
     }
     .glass-card {
-      background: rgba(14, 22, 40, 0.75);
-      backdrop-filter: blur(14px);
+      background: rgba(11, 19, 36, 0.75);
+      backdrop-filter: blur(16px);
       border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    }
+    .glass-card:hover {
+      border-color: rgba(37, 99, 235, 0.35);
+    }
+    .tab-btn.active {
+      background: linear-gradient(135deg, #1d4ed8, #2563eb);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
     }
     .pulse-dot {
       animation: pulse-ring 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -49,27 +60,59 @@
       0%, 100% { opacity: 1; transform: scale(1); }
       50% { opacity: 0.35; transform: scale(1.2); }
     }
+    .node-card {
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-card:hover {
+      transform: translateY(-4px);
+      border-color: #2563eb;
+      box-shadow: 0 12px 25px -5px rgba(37, 99, 235, 0.25);
+    }
   </style>
 </head>
 <body class="antialiased selection:bg-brand selection:text-white flex flex-col min-h-screen">
 
+  <!-- Top Header -->
   <header class="sticky top-0 z-50 glass-card border-b border-slate-800/80 px-6 py-3.5 flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <a href="https://tejashr0716.github.io/" class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-600/30 transition hover:scale-105">
+      <a href="https://tejashr0716.github.io/" class="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-blue-500 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-600/30 transition hover:scale-105">
         <i class="fa-solid fa-square-parking text-lg"></i>
       </a>
       <div>
         <div class="flex items-center gap-2">
           <h1 class="font-extrabold text-lg text-white tracking-tight">SmartPark IoT</h1>
-          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5">
-            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 pulse-dot"></span> SENSORS ONLINE
+          <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-blue-500/20 text-blue-400 border border-blue-500/30 flex items-center gap-1.5 font-mono">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-400 pulse-dot"></span> PROD ENGINE v2.4
           </span>
         </div>
         <p class="text-xs text-slate-400">2D Smart Parking Bay Matrix · Ultrasonic Sensor Telemetry · QR Access Passes</p>
       </div>
     </div>
 
+    <!-- Center Navigation Tabs -->
+    <div class="hidden md:flex items-center gap-1 bg-slate-950/80 p-1 border border-slate-800 rounded-xl text-xs font-semibold">
+      <button onclick="switchTab('console')" id="tab-console" class="tab-btn active px-4 py-1.5 rounded-lg transition">
+        <i class="fa-solid fa-sliders text-xs mr-1"></i> Live Operations
+      </button>
+      <button onclick="switchTab('topology')" id="tab-topology" class="tab-btn px-4 py-1.5 text-slate-400 hover:text-white rounded-lg transition">
+        <i class="fa-solid fa-diagram-project text-xs mr-1"></i> System Topology
+      </button>
+      <button onclick="switchTab('scenarios')" id="tab-scenarios" class="tab-btn px-4 py-1.5 text-slate-400 hover:text-white rounded-lg transition">
+        <i class="fa-solid fa-vial text-xs mr-1"></i> Concurrency Labs
+      </button>
+      <button onclick="switchTab('profiler')" id="tab-profiler" class="tab-btn px-4 py-1.5 text-slate-400 hover:text-white rounded-lg transition">
+        <i class="fa-solid fa-database text-xs mr-1"></i> SQL Profiler
+      </button>
+      <button onclick="switchTab('devops')" id="tab-devops" class="tab-btn px-4 py-1.5 text-slate-400 hover:text-white rounded-lg transition">
+        <i class="fa-solid fa-server text-xs mr-1"></i> DevOps Specs
+      </button>
+    </div>
+
+    <!-- Right Actions -->
     <div class="flex items-center gap-3">
+      <button onclick="toggleAudio()" id="btn-audio" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-white flex items-center justify-center transition" title="Toggle Sound Feedback">
+        <i class="fa-solid fa-volume-high text-xs"></i>
+      </button>
       <a href="https://github.com/tejashr0716/SmartPark-Airport-Mall-Parking-System" target="_blank" class="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition flex items-center gap-1.5">
         <i class="fa-brands fa-github text-sm"></i> Source Code
       </a>
@@ -79,145 +122,652 @@
     </div>
   </header>
 
+  <!-- Main Content -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-6 space-y-6">
 
     <!-- KPI Metrics -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Terminal Bays</span>
-        <div class="text-2xl font-black text-white font-mono mt-2">40 Bays</div>
-        <div class="text-xs text-blue-400 font-semibold mt-1">Terminal 2 Premium Deck</div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Total Terminal Bays</span>
+          <div class="w-8 h-8 rounded-lg bg-blue-950/60 border border-blue-800/40 flex items-center justify-center text-blue-400">
+            <i class="fa-solid fa-square-parking"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-white font-mono">32 Bays</div>
+        <div class="text-xs text-blue-400 font-semibold mt-1 flex items-center gap-1">
+          <i class="fa-solid fa-plane-departure"></i> Terminal 2 Premium Deck
+        </div>
       </div>
 
       <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Occupied Bays</span>
-        <div class="text-2xl font-black text-white font-mono mt-2" id="kpi-occ">28 Parked</div>
-        <div class="text-xs text-rose-400 font-semibold mt-1">70% Facility Occupancy</div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Occupied Bays</span>
+          <div class="w-8 h-8 rounded-lg bg-rose-950/60 border border-rose-800/40 flex items-center justify-center text-rose-400">
+            <i class="fa-solid fa-car"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-white font-mono" id="kpi-occupied">22 Parked</div>
+        <div class="text-xs text-rose-400 font-semibold mt-1 flex items-center gap-1">
+          <i class="fa-solid fa-circle-dot"></i> 68.7% Facility Occupancy
+        </div>
       </div>
 
       <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reserved Passes</span>
-        <div class="text-2xl font-black text-white font-mono mt-2" id="kpi-res">5 Active Holds</div>
-        <div class="text-xs text-amber-400 font-semibold mt-1">15-Min Arrival Window</div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Reserved Passes</span>
+          <div class="w-8 h-8 rounded-lg bg-amber-950/60 border border-amber-800/40 flex items-center justify-center text-amber-400">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-white font-mono" id="kpi-reserved">3 Active Holds</div>
+        <div class="text-xs text-amber-400 font-semibold mt-1 flex items-center gap-1">
+          <i class="fa-solid fa-stopwatch"></i> 15-Min Arrival Window
+        </div>
       </div>
 
       <div class="glass-card rounded-2xl p-5 relative overflow-hidden">
-        <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vacant Bays</span>
-        <div class="text-2xl font-black text-white font-mono mt-2" id="kpi-vac">7 Open</div>
-        <div class="text-xs text-emerald-400 font-semibold mt-1">Instant Reservation Open</div>
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Vacant Bays</span>
+          <div class="w-8 h-8 rounded-lg bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center text-emerald-400">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+        </div>
+        <div class="text-2xl font-black text-white font-mono" id="kpi-vacant">7 Open</div>
+        <div class="text-xs text-emerald-400 font-semibold mt-1 flex items-center gap-1">
+          <i class="fa-solid fa-bolt"></i> Instant Reservation Open
+        </div>
       </div>
     </div>
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- TAB 1: LIVE OPERATIONS CONSOLE -->
+    <div id="view-console" class="space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-      <!-- Left: 2D Parking Floorplan (2 Cols) -->
-      <div class="lg:col-span-2 glass-card rounded-2xl p-6 space-y-5">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <div>
-            <h2 class="text-base font-bold text-white flex items-center gap-2">
-              <i class="fa-solid fa-car text-blue-400"></i> Level 1 Bay Floorplan
-            </h2>
-            <p class="text-xs text-slate-400">Click any green bay to reserve your slot and generate a gate QR pass</p>
+        <!-- 2D Smart Parking Bay Matrix (2 Cols) -->
+        <div class="lg:col-span-2 glass-card rounded-2xl p-6 space-y-5">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800">
+            <div>
+              <h2 class="text-base font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-square-parking text-blue-400"></i> Terminal 2 Live Bay Matrix
+              </h2>
+              <p class="text-xs text-slate-400">Click any vacant bay to reserve and generate an instant SVG QR entry access pass</p>
+            </div>
+            
+            <!-- Legend -->
+            <div class="flex items-center gap-3 text-[11px] font-mono">
+              <span class="flex items-center gap-1 text-emerald-400"><span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500"></span> Vacant</span>
+              <span class="flex items-center gap-1 text-rose-400"><span class="w-3 h-3 rounded bg-rose-900 border border-rose-700"></span> Occupied</span>
+              <span class="flex items-center gap-1 text-amber-400"><span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-500"></span> Reserved</span>
+            </div>
           </div>
-          <button onclick="simulateSensorArrival()" class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 text-xs font-bold border border-blue-500/30 hover:bg-blue-500/30">
-            📡 Test Sensor Vehicle Arrival
-          </button>
+
+          <!-- Boom Barrier Simulation Status -->
+          <div class="p-3 rounded-xl bg-slate-950/70 border border-slate-800 flex items-center justify-between text-xs font-mono">
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-bars text-blue-400"></i>
+              <span>ENTRY BOOM BARRIER #1:</span>
+              <span class="px-2 py-0.5 rounded font-bold bg-slate-800 text-slate-300" id="barrier-status">ARMED / READY</span>
+            </div>
+            <button onclick="testBarrierCycle()" class="px-3 py-1 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-bold text-[11px] transition">
+              Cycle Boom Barrier
+            </button>
+          </div>
+
+          <!-- 2D Parking Bay Matrix Grid (4 Rows x 8 Bays = 32) -->
+          <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800/80 overflow-x-auto">
+            <div class="min-w-[500px] space-y-3" id="bays-matrix"></div>
+          </div>
         </div>
 
-        <div class="grid grid-cols-4 sm:grid-cols-5 gap-3" id="bays-grid">
-          <!-- Injected via JS -->
+        <!-- Real-Time Audit Ledger & Pass Card (1 Col) -->
+        <div class="glass-card rounded-2xl p-6 flex flex-col h-full space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+            <h3 class="text-sm font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-terminal text-cyan-400"></i> ANPR & Sensor Ledger
+            </h3>
+            <span class="w-2 h-2 rounded-full bg-blue-400 pulse-dot"></span>
+          </div>
+
+          <div id="event-stream" class="flex-1 space-y-2 overflow-y-auto max-h-[460px] font-mono text-xs pr-1">
+            <div class="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-slate-300">
+              <span class="text-slate-500 text-[10px] block">15:57:38</span>
+              <span class="text-blue-400 font-bold">[MQTT_SENSORS]</span> EMQX broker connected. 32 ultrasonic sensors streaming.
+            </div>
+          </div>
+
+          <!-- Active Pass Hold Card -->
+          <div class="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 space-y-2 text-xs">
+            <div class="flex items-center justify-between text-slate-400">
+              <span>Your Active QR Pass Hold:</span>
+              <span class="font-mono text-amber-400 font-bold" id="my-pass-timer">No Active Pass</span>
+            </div>
+            <div class="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+              <div id="pass-progress" class="bg-amber-400 h-1.5 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
+          </div>
         </div>
 
-        <div class="flex items-center justify-between pt-3 border-t border-slate-800 text-xs">
-          <span class="flex items-center gap-1.5 text-emerald-400"><span class="w-3 h-3 rounded bg-emerald-500/20 border border-emerald-500 inline-block"></span> Vacant</span>
-          <span class="flex items-center gap-1.5 text-amber-400"><span class="w-3 h-3 rounded bg-amber-500/20 border border-amber-500 inline-block"></span> Reserved</span>
-          <span class="flex items-center gap-1.5 text-rose-400"><span class="w-3 h-3 rounded bg-rose-500/20 border border-rose-500 inline-block"></span> Parked (Occupied)</span>
+      </div>
+    </div>
+
+    <!-- TAB 2: SYSTEM TOPOLOGY (INTERACTIVE NODE GRAPH) -->
+    <div id="view-topology" class="hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-diagram-project text-blue-400"></i> IoT Parking Architecture Topology
+          </h2>
+          <p class="text-xs text-slate-400">Click any system component below to inspect its operational metrics, protocols, and failover behavior.</p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <!-- Node 1 -->
+          <div onclick="inspectNode('mqtt')" class="node-card cursor-pointer p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-cyan-400 uppercase tracking-wider font-mono">Edge IoT</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <h4 class="font-bold text-white text-sm">MQTT Edge Broker</h4>
+            <p class="text-xs text-slate-400">EMQX cluster ingests 500 ultrasonic pings/sec with QoS 1 guarantees.</p>
+            <div class="text-[10px] text-slate-500 font-mono">Port 1883/8883 · TLS Encrypted</div>
+          </div>
+
+          <!-- Node 2 -->
+          <div onclick="inspectNode('gateway')" class="node-card cursor-pointer p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider font-mono">Ingestion Core</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <h4 class="font-bold text-white text-sm">Telemetry Gateway</h4>
+            <p class="text-xs text-slate-400">Go / Node microservice parsing ultrasonic byte streams into spatial coordinates.</p>
+            <div class="text-[10px] text-slate-500 font-mono">Sub-5ms End-to-End Processing</div>
+          </div>
+
+          <!-- Node 3 -->
+          <div onclick="inspectNode('spatial')" class="node-card cursor-pointer p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-blue-400 uppercase tracking-wider font-mono">Spatial Shard</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <h4 class="font-bold text-white text-sm">Redis Spatial Bitmaps</h4>
+            <p class="text-xs text-slate-400">O(1) vacant bay bitmask check. 15-minute reservation lease holds.</p>
+            <div class="text-[10px] text-slate-500 font-mono">Port 6379 · Bitfield Engine</div>
+          </div>
+
+          <!-- Node 4 -->
+          <div onclick="inspectNode('db')" class="node-card cursor-pointer p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider font-mono">Relational DB</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <h4 class="font-bold text-white text-sm">PostgreSQL 15 Parking Ledger</h4>
+            <p class="text-xs text-slate-400">B-Tree indexed bays, license plates, ANPR entry/exit timestamps, and receipts.</p>
+            <div class="text-[10px] text-slate-500 font-mono">Port 5432 · ACID Compliant</div>
+          </div>
+
+          <!-- Node 5 -->
+          <div onclick="inspectNode('barrier')" class="node-card cursor-pointer p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-amber-400 uppercase tracking-wider font-mono">Access Control</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <h4 class="font-bold text-white text-sm">Barrier Relay Controller</h4>
+            <p class="text-xs text-slate-400">Triggers optical barrier arm relays when verified SVG QR pass is scanned.</p>
+            <div class="text-[10px] text-slate-500 font-mono">Hardware GPIO Trigger · Optocoupled</div>
+          </div>
+
+          <!-- Node 6 -->
+          <div onclick="inspectNode('backup')" class="node-card cursor-pointer p-4 rounded-xl bg-slate-950/80 border border-slate-800 space-y-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-purple-400 uppercase tracking-wider font-mono">Disaster Recovery</span>
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            </div>
+            <h4 class="font-bold text-white text-sm">AES-256 Disaster Recovery</h4>
+            <p class="text-xs text-slate-400">Continuous WAL archiving and nightly encrypted database snapshots.</p>
+            <div class="text-[10px] text-slate-500 font-mono">Verified Container Restore Drill</div>
+          </div>
+        </div>
+
+        <div id="node-inspector" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300">
+          <span class="text-blue-400 font-bold uppercase tracking-wider text-[11px] block mb-1">Topology Node Inspector:</span>
+          Click any architecture node above to reveal its high-availability configuration and live telemetry.
         </div>
       </div>
+    </div>
 
-      <!-- Right: QR Pass Generator (1 Col) -->
-      <div class="glass-card rounded-2xl p-6 flex flex-col space-y-4">
-        <div class="flex items-center justify-between pb-3 border-b border-slate-800">
-          <h3 class="text-sm font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-qrcode text-cyan-400"></i> Gate Access QR Pass
-          </h3>
-          <span class="w-2 h-2 rounded-full bg-emerald-400 pulse-dot"></span>
+    <!-- TAB 3: CONCURRENCY LABS (SCENARIOS) -->
+    <div id="view-scenarios" class="hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-vial text-blue-400"></i> Sensor Telemetry & Race Condition Lab
+          </h2>
+          <p class="text-xs text-slate-400">Simulate dual-vehicle simultaneous arrival, sensor telemetry drops, and pass expiration.</p>
         </div>
 
-        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-center space-y-3">
-          <div class="w-36 h-36 bg-white p-2 rounded-xl mx-auto flex items-center justify-center">
-            <svg class="w-full h-full text-slate-950" viewBox="0 0 100 100">
-              <rect width="30" height="30" fill="black" />
-              <rect x="70" width="30" height="30" fill="black" />
-              <rect y="70" width="30" height="30" fill="black" />
-              <rect x="40" y="40" width="20" height="20" fill="black" />
-              <rect x="10" y="10" width="10" height="10" fill="white" />
-              <rect x="80" y="10" width="10" height="10" fill="white" />
-              <rect x="10" y="80" width="10" height="10" fill="white" />
-            </svg>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-3">
+            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-car-burst text-rose-400"></i> Dual Arrival on Bay A04
+            </h4>
+            <p class="text-xs text-slate-400">Two vehicles attempt to enter Bay A04 simultaneously; first ultrasonic sensor trip claims bay.</p>
+            <button onclick="simulateDualArrivalRace()" class="w-full py-2 rounded-xl bg-rose-500/20 text-rose-400 border border-rose-500/40 hover:bg-rose-500/30 text-xs font-bold transition">
+              Simulate Dual Arrival
+            </button>
           </div>
-          <div class="font-mono text-xs text-slate-300">
-            <span class="text-slate-500 block text-[10px]">SCAN AT ENTRY BOOM BARRIER</span>
-            <span class="font-bold text-emerald-400 text-sm" id="qr-bay-name">BAY-A04 RESERVED</span>
-            <span class="text-slate-400 block mt-1">Vehicle: KA-01-MJ-2026</span>
+
+          <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-3">
+            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-satellite-dish text-amber-400"></i> Sensor Telemetry Drop
+            </h4>
+            <p class="text-xs text-slate-400">Simulates edge ultrasonic sensor packet loss; verifies fail-safe fallback to barrier cameras.</p>
+            <button onclick="simulateSensorDrop()" class="w-full py-2 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500/30 text-xs font-bold transition">
+              Trigger Sensor Offline
+            </button>
+          </div>
+
+          <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/60 space-y-3">
+            <h4 class="font-bold text-sm text-white flex items-center gap-2">
+              <i class="fa-solid fa-clock-rotate-left text-cyan-400"></i> 15-Min Reservation Expiry
+            </h4>
+            <p class="text-xs text-slate-400">Unclaimed QR pass reaches 15-minute TTL; automatically releases bay back to green vacant.</p>
+            <button onclick="simulatePassExpiry()" class="w-full py-2 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-500/30 text-xs font-bold transition">
+              Simulate 15-Min Expiry
+            </button>
+          </div>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950/80 border border-slate-800 font-mono text-xs space-y-2">
+          <div class="text-slate-400 font-bold uppercase tracking-wider text-[11px]">Lab Execution Trace:</div>
+          <div id="lab-output" class="text-slate-300">Ready for scenario execution. Click any button above to test smart parking mechanics.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: SQL PROFILER (EXPLAIN ANALYZE) -->
+    <div id="view-profiler" class="hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-database text-cyan-400"></i> Vacant Bay Index Profiler
+          </h2>
+          <p class="text-xs text-slate-400">Profile PostgreSQL queries scanning vacant parking bays in Terminal 2 with B-Tree indexes.</p>
+        </div>
+
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="text-xs font-mono text-slate-400 font-bold uppercase">SQL Query:</span>
+            <button onclick="runExplainAnalyze()" class="px-3.5 py-1.5 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-lg">
+              <i class="fa-solid fa-play text-[10px]"></i> Run EXPLAIN ANALYZE
+            </button>
+          </div>
+          <pre class="text-xs font-mono text-cyan-300 bg-slate-900/80 p-3 rounded-lg border border-slate-800"><code>SELECT bay_id, level_num, bay_type 
+FROM parking_bays 
+WHERE terminal = 'T2' AND status = 'VACANT';</code></pre>
+        </div>
+
+        <div id="profiler-output" class="p-4 rounded-xl bg-slate-950 border border-slate-800 font-mono text-xs text-slate-300 space-y-1">
+          <span class="text-slate-500 italic">Click 'Run EXPLAIN ANALYZE' to profile the query planner tree.</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: DEVOPS & CI/CD SPECS -->
+    <div id="view-devops" class="hidden space-y-6">
+      <div class="glass-card rounded-2xl p-6 space-y-6">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-server text-emerald-400"></i> Hardened DevOps & Recovery Specifications
+          </h2>
+          <p class="text-xs text-slate-400">Multi-stage Docker, declarative Jenkinsfile, and verified disaster recovery.</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">REST API Explorer (Copy cURL)</h3>
+            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2">
+              <div class="flex justify-between items-center text-xs">
+                <span class="font-mono text-blue-400 font-bold">POST /v1/bays/reserve</span>
+                <button onclick="copyCurl()" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-mono">
+                  <i class="fa-solid fa-copy mr-1"></i> Copy cURL
+                </button>
+              </div>
+              <pre class="text-[11px] font-mono text-slate-400 overflow-x-auto p-2 bg-slate-900 rounded"><code>curl -X POST https://api.smartpark.iot/v1/bays/reserve \
+  -H "Content-Type: application/json" \
+  -d '{"bayId":"BAY-A04","plate":"KA-01-MJ-2026"}'</code></pre>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Verified Backup & Recovery Principle</h3>
+            <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-2 text-xs text-slate-300">
+              <p>Addresses Gway Tech principle: <em class="text-amber-400">"A backup is useful only when it can be restored."</em></p>
+              <ul class="list-disc list-inside text-slate-400 space-y-1 text-[11px]">
+                <li>ANPR parking records backed up nightly via OpenSSL AES-256</li>
+                <li>Zero data loss Write-Ahead Logging (WAL) replication</li>
+                <li>Weekly automated restoration drill verifies complete recovery in temporary sandbox container</li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
-
     </div>
 
   </main>
 
+  <!-- Interactive QR Access Pass Modal -->
+  <div id="pass-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-2xl max-w-sm w-full p-6 space-y-4 border border-slate-700 shadow-2xl animate-in fade-in text-center">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+        <h3 class="text-base font-bold text-white flex items-center gap-2" id="modal-bay-title">
+          <i class="fa-solid fa-qrcode text-blue-400"></i> QR Access Pass
+        </h3>
+        <button onclick="closePassModal()" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+      </div>
+
+      <!-- SVG QR Code -->
+      <div class="p-4 rounded-xl bg-white mx-auto w-44 h-44 flex items-center justify-center shadow-lg">
+        <svg viewBox="0 0 100 100" class="w-full h-full">
+          <!-- Outer border -->
+          <rect width="100" height="100" fill="#ffffff"/>
+          <!-- Position Marks (3 corners) -->
+          <rect x="10" y="10" width="25" height="25" fill="#0f172a"/>
+          <rect x="14" y="14" width="17" height="17" fill="#ffffff"/>
+          <rect x="18" y="18" width="9" height="9" fill="#0f172a"/>
+
+          <rect x="65" y="10" width="25" height="25" fill="#0f172a"/>
+          <rect x="69" y="14" width="17" height="17" fill="#ffffff"/>
+          <rect x="73" y="18" width="9" height="9" fill="#0f172a"/>
+
+          <rect x="10" y="65" width="25" height="25" fill="#0f172a"/>
+          <rect x="14" y="69" width="17" height="17" fill="#ffffff"/>
+          <rect x="18" y="73" width="9" height="9" fill="#0f172a"/>
+
+          <!-- Data pattern -->
+          <rect x="42" y="15" width="6" height="6" fill="#0f172a"/>
+          <rect x="52" y="18" width="6" height="6" fill="#0f172a"/>
+          <rect x="42" y="28" width="6" height="6" fill="#0f172a"/>
+          <rect x="52" y="38" width="6" height="6" fill="#0f172a"/>
+          <rect x="25" y="45" width="6" height="6" fill="#0f172a"/>
+          <rect x="35" y="45" width="6" height="6" fill="#0f172a"/>
+          <rect x="65" y="45" width="6" height="6" fill="#0f172a"/>
+          <rect x="75" y="52" width="6" height="6" fill="#0f172a"/>
+          <rect x="42" y="65" width="6" height="6" fill="#0f172a"/>
+          <rect x="52" y="75" width="6" height="6" fill="#0f172a"/>
+          <rect x="68" y="72" width="6" height="6" fill="#0f172a"/>
+          <rect x="80" y="80" width="6" height="6" fill="#0f172a"/>
+        </svg>
+      </div>
+
+      <div class="space-y-1 text-xs font-mono" id="modal-pass-info"></div>
+
+      <div class="pt-3 border-t border-slate-800 flex items-center justify-center">
+        <button onclick="closePassModal()" class="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold shadow-lg shadow-blue-600/30">
+          Done & Close Pass
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    let bays = [];
-    for (let i = 1; i <= 20; i++) {
-      let isOcc = i % 3 === 0;
-      let isRes = i === 4;
-      bays.push({ id: `BAY-A${i < 10 ? '0' + i : i}`, status: isOcc ? 'OCCUPIED' : (isRes ? 'RESERVED' : 'OPEN') });
+    const ROWS = ['A', 'B', 'C', 'D'];
+    const BAYS_PER_ROW = 8;
+    let bayState = {};
+    let activePassBayId = null;
+    let passTimerSeconds = 900;
+    let timerInterval = null;
+    let audioEnabled = true;
+
+    // Web Audio Synthesizer
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(freq = 520, type = 'sine', duration = 0.08) {
+      if (!audioEnabled || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = type;
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+      } catch(e) {}
+    }
+
+    function toggleAudio() {
+      audioEnabled = !audioEnabled;
+      document.getElementById("btn-audio").innerHTML = audioEnabled ? '<i class="fa-solid fa-volume-high text-xs"></i>' : '<i class="fa-solid fa-volume-xmark text-xs text-rose-400"></i>';
+    }
+
+    function initBayMatrix() {
+      ROWS.forEach(r => {
+        for (let b = 1; b <= BAYS_PER_ROW; b++) {
+          const id = `BAY-${r}0${b}`;
+          // Pre-populate some occupied/reserved
+          let status = 'VACANT';
+          let plate = null;
+          if (b <= 5 && r !== 'D') {
+            status = 'OCCUPIED';
+            plate = `KA-01-MJ-${Math.floor(1000 + Math.random() * 9000)}`;
+          } else if (r === 'D' && b <= 3) {
+            status = 'RESERVED';
+          }
+          bayState[id] = { status, plate };
+        }
+      });
+      renderBays();
     }
 
     function renderBays() {
-      const c = document.getElementById("bays-grid");
-      c.innerHTML = bays.map(b => {
-        let style = 'bg-blue-950/40 border-blue-800/60 text-blue-300 hover:bg-blue-600 hover:text-white';
-        let lblColor = 'text-emerald-400';
-        if (b.status === 'OCCUPIED') {
-          style = 'bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed';
-          lblColor = 'text-rose-500';
-        } else if (b.status === 'RESERVED') {
-          style = 'bg-amber-950/40 border-amber-800/60 text-amber-300';
-          lblColor = 'text-amber-400';
-        }
+      const container = document.getElementById("bays-matrix");
+      container.innerHTML = ROWS.map(r => {
+        let rowHtml = `<div class="flex items-center gap-2 justify-center"><span class="w-6 font-mono text-xs text-slate-500 font-bold">ROW ${r}</span>`;
+        for (let b = 1; b <= BAYS_PER_ROW; b++) {
+          const id = `BAY-${r}0${b}`;
+          const bay = bayState[id];
+          const isMine = activePassBayId === id;
 
-        return `
-          <button onclick="reserveBay('${b.id}')" class="p-3 rounded-xl border text-center font-mono font-bold text-xs transition ${style}">
-            ${b.id}
-            <span class="block text-[9px] ${lblColor}">${b.status}</span>
-          </button>
-        `;
+          let bgClass = "bg-emerald-950/30 border-emerald-500/40 text-emerald-400 hover:border-emerald-400 hover:bg-emerald-950/60 cursor-pointer";
+          let label = "VACANT";
+
+          if (bay.status === 'OCCUPIED') {
+            bgClass = "bg-rose-950/50 border-rose-800 text-rose-400 cursor-not-allowed";
+            label = bay.plate ? bay.plate.substring(6) : "PARKED";
+          } else if (bay.status === 'RESERVED' && !isMine) {
+            bgClass = "bg-amber-950/50 border-amber-800 text-amber-400 cursor-not-allowed";
+            label = "HOLD";
+          } else if (isMine) {
+            bgClass = "bg-blue-600 border-blue-400 text-white shadow-lg shadow-blue-600/40";
+            label = "YOUR PASS";
+          }
+
+          rowHtml += `
+            <div onclick="${bay.status === 'VACANT' ? `openPassModal('${id}')` : ''}"
+                 class="w-16 h-16 rounded-xl border flex flex-col items-center justify-center p-1 font-mono transition text-center ${bgClass}">
+              <span class="text-[10px] font-bold block">${id.substring(4)}</span>
+              <span class="text-[9px] block tracking-tighter">${label}</span>
+            </div>
+          `;
+        }
+        rowHtml += `</div>`;
+        return rowHtml;
       }).join('');
     }
 
-    function reserveBay(id) {
-      const b = bays.find(x => x.id === id);
-      if (b.status === 'OCCUPIED') return;
-      b.status = 'RESERVED';
-      document.getElementById("qr-bay-name").innerText = `${id} RESERVED`;
+    function openPassModal(bayId) {
+      playBeep(640);
+      activePassBayId = bayId;
+      bayState[bayId].status = 'RESERVED';
       renderBays();
-      alert(`Bay ${id} reserved! QR entry pass generated.`);
+
+      const passCode = `PASS-${Math.floor(1000 + Math.random() * 9000)}`;
+      document.getElementById("modal-bay-title").innerHTML = `<i class="fa-solid fa-qrcode text-blue-400"></i> ${bayId} Pass`;
+      document.getElementById("modal-pass-info").innerHTML = `
+        <span class="text-white font-bold block text-sm">${passCode}</span>
+        <span class="text-slate-400 text-[11px] block">Location: Terminal 2 · ${bayId}</span>
+        <span class="text-amber-400 text-[11px] block font-bold">15-Min Arrival Window Active</span>
+      `;
+      document.getElementById("pass-modal").classList.remove("hidden");
+      startPassTimer();
+      logEvent("QR_PASS_ISSUED", `Generated optical access pass ${passCode} for ${bayId}.`, "text-blue-400");
     }
 
-    function simulateSensorArrival() {
-      const target = bays.find(x => x.status === 'RESERVED') || bays.find(x => x.status === 'OPEN');
-      if (target) {
-        target.status = 'OCCUPIED';
-        renderBays();
-        alert(`Ultrasonic sensor in ${target.id} triggered! Status updated to OCCUPIED. Billing clock started.`);
-      }
+    function closePassModal() {
+      document.getElementById("pass-modal").classList.add("hidden");
     }
 
-    renderBays();
+    function startPassTimer() {
+      if (timerInterval) clearInterval(timerInterval);
+      passTimerSeconds = 900;
+      const timerLabel = document.getElementById("my-pass-timer");
+      const progress = document.getElementById("pass-progress");
+
+      timerInterval = setInterval(() => {
+        passTimerSeconds--;
+        const mins = Math.floor(passTimerSeconds / 60);
+        const secs = passTimerSeconds % 60;
+        timerLabel.innerText = `${mins}:${secs < 10 ? '0' : ''}${secs} Remaining`;
+        progress.style.width = `${(passTimerSeconds / 900) * 100}%`;
+
+        if (passTimerSeconds <= 0) {
+          clearInterval(timerInterval);
+          releasePassHold("EXPIRED");
+        }
+      }, 1000);
+    }
+
+    function releasePassHold(reason) {
+      if (!activePassBayId) return;
+      bayState[activePassBayId].status = 'VACANT';
+      logEvent("PASS_EXPIRED", `Pass hold on ${activePassBayId} expired (${reason}). Bay returned to pool.`, "text-amber-400");
+      activePassBayId = null;
+      document.getElementById("my-pass-timer").innerText = "No Active Pass";
+      document.getElementById("pass-progress").style.width = "0%";
+      renderBays();
+    }
+
+    function testBarrierCycle() {
+      playBeep(720);
+      const st = document.getElementById("barrier-status");
+      st.innerText = "OPENING...";
+      st.className = "px-2 py-0.5 rounded font-bold bg-amber-500/20 text-amber-400";
+
+      setTimeout(() => {
+        playBeep(880, 'sine', 0.15);
+        st.innerText = "GATE OPEN";
+        st.className = "px-2 py-0.5 rounded font-bold bg-emerald-500/20 text-emerald-400";
+        logEvent("BARRIER_CYCLE", "Barrier Gate #1 cycled via relay controller. Vehicle ingress authorized.", "text-emerald-400");
+
+        setTimeout(() => {
+          st.innerText = "ARMED / READY";
+          st.className = "px-2 py-0.5 rounded font-bold bg-slate-800 text-slate-300";
+        }, 2500);
+      }, 800);
+    }
+
+    function inspectNode(type) {
+      playBeep(520);
+      const inspector = document.getElementById("node-inspector");
+      const nodes = {
+        mqtt: { title: "MQTT Edge Broker", spec: "EMQX broker handling 500 ultrasonic sensor pings/sec with QoS 1 persistence. Reconnects edge nodes in &lt;50ms." },
+        gateway: { title: "Telemetry Gateway", spec: "Processes raw sensor distance readings, normalizes spatial bay coordinates, and triggers ANPR plate verification." },
+        spatial: { title: "Redis Spatial Bitmaps", spec: "Fast in-memory bitmask representation of all 32 bays. Sub-0.2ms vacant slot discovery via BITPOS command." },
+        db: { title: "PostgreSQL 15 Parking Ledger", spec: "B-Tree indexed table storing license plates, pass barcodes, entry/exit timestamps, and automated billing receipts." },
+        barrier: { title: "Barrier Relay Controller", spec: "Optocoupled GPIO relay controller actuates heavy-duty boom barrier motor upon valid optical pass scan." },
+        backup: { title: "AES-256 Disaster Recovery", spec: "Nightly dump encrypted with OpenSSL AES-256. Automated container restore test runs weekly." }
+      };
+      const n = nodes[type];
+      inspector.innerHTML = `
+        <span class="text-blue-400 font-bold uppercase tracking-wider text-[11px] block mb-1">${n.title}</span>
+        ${n.spec}
+      `;
+    }
+
+    function runExplainAnalyze() {
+      playBeep(720);
+      const out = document.getElementById("profiler-output");
+      out.innerHTML = `
+        <div class="text-emerald-400 font-bold">[POSTGRES QUERY PLANNER EXPLAIN ANALYZE]</div>
+        <div class="text-slate-300">-> Index Scan using idx_bays_terminal_status on parking_bays (cost=0.15..5.20 rows=7 width=28) (actual time=0.029..0.033 rows=7 loops=1)</div>
+        <div class="text-slate-400">   Index Cond: ((terminal = 'T2'::text) AND (status = 'VACANT'::text))</div>
+        <div class="text-slate-400">   Buffers: shared hit=2</div>
+        <div class="text-cyan-400 font-bold pt-1">Planning Time: 0.048 ms | Execution Time: 0.035 ms (Sequential Scan Avoided!)</div>
+      `;
+      logEvent("SQL_EXPLAIN", "Executed EXPLAIN ANALYZE on parking_bays: 0.035ms execution time.", "text-cyan-400");
+    }
+
+    function copyCurl() {
+      playBeep(800);
+      const curl = `curl -X POST https://api.smartpark.iot/v1/bays/reserve -H "Content-Type: application/json" -d '{"bayId":"BAY-A04","plate":"KA-01-MJ-2026"}'`;
+      navigator.clipboard.writeText(curl);
+      alert("cURL command copied to clipboard!");
+    }
+
+    function simulateDualArrivalRace() {
+      playBeep(440, 'square', 0.15);
+      const log = document.getElementById("lab-output");
+      log.innerHTML = `
+        <span class="text-amber-400">Vehicle #1 (KA-01-MJ-4412):</span> Trips Bay A04 ultrasonic sensor at 16:00:10.001 ... <span class="text-emerald-400">MUTEX ACQUIRED (Status: Occupied)</span><br>
+        <span class="text-cyan-400">Vehicle #2 (KA-05-AB-9811):</span> Arrives at Bay A04 at 16:00:10.003 (+2ms) ... <span class="text-rose-400">BAY OCCUPIED WARNING</span><br>
+        <span class="text-blue-400 font-bold">DIGITAL WAYFINDING: Overhead display redirects Vehicle #2 to Bay A05 (12 meters ahead).</span>
+      `;
+      logEvent("RACE_TEST", "Dual arrival on Bay A04 resolved. Vehicle 2 wayfinding diverted to A05.", "text-rose-400");
+    }
+
+    function simulateSensorDrop() {
+      playBeep(550, 'triangle', 0.15);
+      const log = document.getElementById("lab-output");
+      log.innerHTML = `
+        <span class="text-rose-400 font-bold">Sensor Drop Alert:</span> Ultrasonic Node #14 (Bay B02) dropped offline.<br>
+        <span class="text-slate-300">Fail-Safe Trigger:</span> Gateway switched to ANPR barrier camera estimation. Zero barrier deadlock. Automated alert dispatched to maintenance crew.
+      `;
+      logEvent("SENSOR_DROP", "Sensor node #14 offline. Fail-safe ANPR fallback engaged.", "text-amber-400");
+    }
+
+    function simulatePassExpiry() {
+      playBeep(330, 'triangle', 0.15);
+      if (!activePassBayId) openPassModal("BAY-C04");
+      passTimerSeconds = 3;
+      logEvent("TTL_EXPIRY", "Forced pass TTL expiration. Releasing bay in 3 seconds...", "text-amber-400");
+    }
+
+    function switchTab(tabId) {
+      playBeep(480);
+      ['console', 'topology', 'scenarios', 'profiler', 'devops'].forEach(t => {
+        document.getElementById('view-' + t).classList.add('hidden');
+        document.getElementById('tab-' + t).classList.remove('active');
+      });
+      document.getElementById('view-' + tabId).classList.remove('hidden');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    function logEvent(tag, message, color) {
+      const stream = document.getElementById("event-stream");
+      const now = new Date().toLocaleTimeString();
+      const div = document.createElement("div");
+      div.className = "p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 text-slate-300";
+      div.innerHTML = `<span class="text-slate-500 text-[10px] block">${now}</span>
+                       <span class="${color} font-bold">[${tag}]</span> ${message}`;
+      stream.prepend(div);
+    }
+
+    // Periodic telemetry
+    setInterval(() => {
+      const telemetry = [
+        ["ANPR_SCAN", "Plate KA-03-HA-1824 identified at Terminal 2 Entry Barrier.", "text-slate-400"],
+        ["SENSOR_HEARTBEAT", "All 32 ultrasonic sensors reports battery & signal: 100% OK.", "text-emerald-400"],
+        ["PAYMENT_GATEWAY", "Settled $6.00 parking fee for Bay A01 (Fastag Auto-Debit).", "text-cyan-400"]
+      ];
+      const t = telemetry[Math.floor(Math.random() * telemetry.length)];
+      logEvent(t[0], t[1], t[2]);
+    }, 4500);
+
+    initBayMatrix();
   </script>
 </body>
 </html>
