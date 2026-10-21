@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: smartpark-service
+  namespace: production
+  labels:
+    app: smartpark-engine
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3010
+      protocol: TCP
+      name: http
+  selector:
+    app: smartpark-engine
